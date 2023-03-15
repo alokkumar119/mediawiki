@@ -16,7 +16,14 @@
 ## Snap
 ![screenshot](mediawiki-rg.png)
 ## Second Section is for 
- - CI/CD for Docker Application with Databases
-
-
+ - CI/CD for Application with Helm Chart
+## CI/CD Steps
+ - we are having helm chart in local repository
+ - we pakage the helm chart and push it to acr
+ - we fetch the help chart from acr 
+ - install into aks cluster
+ 
 ## How to run the automation
+ -you need to create a service connection in to azure devops
+ - then you can directly used pipeline to deploy
+ - this has been tested using azure devops 
