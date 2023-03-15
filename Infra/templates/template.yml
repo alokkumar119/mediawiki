@@ -6,25 +6,17 @@ steps:
       unzip terraform_1.2.5_linux_amd64.zip
       sudo mv terraform /usr/local/bin/
       terraform --version
-      echo '####### install terragrunt ########'
-      wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v0.31.0/terragrunt_linux_amd64
-      mv terragrunt_linux_amd64 terragrunt
-      chmod 755 terragrunt
-      sudo mv terragrunt /usr/local/bin/
-      terragrunt --version
-      echo '####### copy ssh key ########'
+     echo '####### copy ssh key ########'
       mkdir -p $HOME/.ssh
       echo "Host ssh.dev.azure.com\n\tStrictHostKeyChecking no\n" >> $HOME/.ssh/config
       # get clientid, secret, subscription id and tenant id using SPN
-  - task: AzureCLI@2
+  - task: AzureCLI@2 
     inputs:
-      azureSubscription: "HUB-GSEU005-ITAZ-UAT"
+      azureSubscription: "test"
       scriptType: bash
       addSpnToEnvironment: true
       scriptLocation: inlineScript
       inlineScript: |
-        connection_string=$(az storage account show-connection-string -g rgp-infra-uat -n gseu005stau100  | jq -r .connectionString)
-        echo "##vso[task.setvariable variable=connection_string]${connection_string}"
         echo "##vso[task.setvariable variable=ARM_SUBSCRIPTION_ID]$(az account show --query="id" -o tsv)"
         echo "##vso[task.setvariable variable=ARM_CLIENT_ID]${servicePrincipalId}"
         echo "##vso[task.setvariable variable=ARM_CLIENT_SECRET]${servicePrincipalKey}"
