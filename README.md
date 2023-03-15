@@ -5,6 +5,7 @@
  - $env:ARM_CLIENT_SECRET
  - $env:ARM_TENANT_ID
  - $env:ARM_SUBSCRIP TION_ID
+### or can be pass via sh file with export command for bash enviroment
  
 ## There are two section in it first section is for basic infra which will have code for 
  - Resource Group
