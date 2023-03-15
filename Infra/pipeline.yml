@@ -1,0 +1,45 @@
+trigger: none
+# variables:
+#   poolName: cloudops_uat_vmss_privateagent
+pool:
+  vmImage: "ubuntu-latest"
+# pool:
+#   name: $(poolName)
+stages: 
+  # terraform plan stage, where it determines what needs to be created, updated, or destroyed to move from the real/current state of the infrastructure to the desired state
+  - stage: terraform_plan
+    jobs:
+    - deployment: terraform_plan
+      displayName: terraform_plan
+      environment: 'terraform_plan'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - template: ../template/pipeline_secrets.yml
+            - checkout: git:///ITAZ-GS-EU/ITOperations/HUB-GSEU005-ITAZ@UAT
+            - script: |
+                cd $(Build.SourcesDirectory)/UAT_Infra/Hub/Management/AzurePolicies
+                terragrunt init --upgrade 
+                terragrunt plan
+## terraform apply stage, where it applies the changes real/current state of the infrastructure in order to achieve the desired state
+## In this stage terraform wait for manual approvals 
+  - stage: terraform_apply
+    jobs:
+    - deployment: terraform_apply
+      displayName: terraform_apply
+      environment: 'terraform_apply'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - template: ../template/pipeline_secrets.yml
+            - checkout: git:///ITAZ-GS-EU/ITOperations/HUB-GSEU005-ITAZ@UAT
+            - script: |
+                cd $(Build.SourcesDirectory)/UAT_Infra/Hub/Management/AzurePolicies
+                terragrunt init --upgrade 
+                terragrunt apply -auto-approve
+            - task: DeleteFiles@1
+              inputs:
+                SourceFolder: true
+                Contents: '*'
