@@ -16,3 +16,6 @@
 ![screenshot](mediawiki-rg.png)
 ## Second Section is for 
  - CI/CD for Docker Application with Databases
+
+
+## How to run the automation
