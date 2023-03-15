@@ -22,7 +22,7 @@
  - we pakage the helm chart and push it to acr
  - we fetch the help chart from acr 
  - install into aks cluster
-##Snap CI/CD
+## Snap CI/CD
 ![screenshot](cicd.png)
 ## How to run the automation
  - you need to create a service connection in to azure devops
