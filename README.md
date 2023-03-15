@@ -12,6 +12,7 @@
  - Azure Keyvault
  - Azure container registry
  - Azure Kubernetes Cluster
-
+## Snap
+![screenshot](mediawiki-rg.png)
 ## Second Section is for 
  - CI/CD for Docker Application with Databases
