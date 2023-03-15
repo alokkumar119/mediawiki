@@ -1,0 +1,61 @@
+
+trigger: none
+
+variables:
+  #vars_path: 
+  - name: aks-namespace
+    value: default
+  - name: helmchart_name
+    value: mediawiki
+  - name: helmchart_version
+    value: 20230314.1
+  - name: ENVIRONMENT
+    value: qa
+  - name: acr-name
+    value: mediawikiacr
+  - name: SERVICE_NAME
+    value: mediawiki-poc
+
+resources:
+  pipelines:
+  - pipeline: CI_Pipeline
+    source: CI_Pipeline
+    trigger: 
+      branches:
+        include:
+        - develop
+
+stages: 
+  stage:
+    steps:
+    - task: HelmInstaller@0
+      displayName: 'Install Helm'
+
+    - script: |
+        echo "##vso[build.updatebuildnumber]$(resources.pipeline.CI_Pipeline.runName)-release"
+      displayName: 'update Build number with CI image version'
+
+    - task: AzureCLI@2
+      displayName: 'AKS Deploy'
+      inputs:
+        azureSubscription: 'test'
+        scriptType: bash
+        addSpnToEnvironment: true
+        scriptLocation: inlineScript
+        inlineScript: |
+          USER_NAME="00000000-0000-0000-0000-000000000000"
+          PASSWORD=$(az acr login --name $(acr-name) --expose-token --output tsv --query accessToken)
+
+          helm registry login $(acr-name) \
+            --username $USER_NAME \
+            --password $PASSWORD
+
+          echo "build version for CI is $(resources.pipeline.CI_Pipeline.runName)"
+
+          export SERVICE_NAME=$(echo "$(Build.DefinitionName)" | tr '[:upper:]' '[:lower:]' | sed -e 's/\(-cd\)*$//g' | tr _ -)
+
+          echo "####### Helm Dry Run ########"
+          helm template $SERVICE_NAME oci://$(acr-name)/helm/$(helmchart_name) --version $( helmchart_version ) -n $(aks-namespace) -f $(vars_path)/helm_vars/helm-$(ENVIRONMENT)-values.yml  
+
+          echo "####### Helm upgrade ########"
+          helm upgrade $SERVICE_NAME oci://$(acr-name)/helm/$(helmchart_name) --version $(helmchart_version) -n $(aks-namespace) -f $(vars_path)/helm_vars/helm-$(ENVIRONMENT)-values.yml --install

@@ -1,0 +1,43 @@
+trigger:
+  branches:
+    include:
+      - ref/master 
+
+# variables:
+#   ACR_NAME: mediawikiacr     
+
+stages:
+  - stage: 
+    jobs:
+      - job: 
+        steps:
+          - checkout: self
+
+          - task: HelmInstaller@0
+            displayName: 'Install Helm'
+
+          - task: AzureCLI@2
+            displayName: 'Helm Publish'
+            inputs:
+              azureSubscription: 'test'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -x
+                USER_NAME="00000000-0000-0000-0000-000000000000"
+                PASSWORD=$(az acr login --name mediawikiacr.azurecr.io --expose-token --output tsv --query accessToken)
+    
+                helm registry login mediawikiacr \
+                  --username $USER_NAME \
+                  --password $PASSWORD
+                ls -lrt
+                pwd
+                cd Helm-Charts/mediawiki
+                ls -l
+    
+                helm package . --app-version $(Build.BuildNumber) --version $(Build.BuildNumber)
+    
+                helm push mediawiki-$(Build.BuildNumber).tgz oci://'mediawikiacr.azurecr.io'/helm
+    
+                rm mediawiki-$(Build.BuildNumber).tgz
+
