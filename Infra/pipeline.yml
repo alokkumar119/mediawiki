@@ -1,13 +1,9 @@
 trigger: none
-# variables:
-#   poolName: cloudops_uat_vmss_privateagent
 pool:
   vmImage: "ubuntu-latest"
 # pool:
 #   name: $(poolName)
-stages: 
-  # terraform plan stage, where it determines what needs to be created, updated, or destroyed to move from the real/current state of the infrastructure to the desired state
-  - stage: terraform_plan
+ - stage: terraform_plan
     jobs:
     - deployment: terraform_plan
       displayName: terraform_plan
@@ -16,12 +12,12 @@ stages:
         runOnce:
           deploy:
             steps:
-            - template: ../template/pipeline_secrets.yml
-            - checkout: git:///ITAZ-GS-EU/ITOperations/HUB-GSEU005-ITAZ@UAT
+            - template: ../template/template.yml
+            - checkout: git:///some git repo
             - script: |
-                cd $(Build.SourcesDirectory)/UAT_Infra/Hub/Management/AzurePolicies
-                terragrunt init --upgrade 
-                terragrunt plan
+                cd $(Build.SourcesDirectory)/Infra
+                terraform init --upgrade 
+                terraform plan
 ## terraform apply stage, where it applies the changes real/current state of the infrastructure in order to achieve the desired state
 ## In this stage terraform wait for manual approvals 
   - stage: terraform_apply
@@ -33,12 +29,12 @@ stages:
         runOnce:
           deploy:
             steps:
-            - template: ../template/pipeline_secrets.yml
-            - checkout: git:///ITAZ-GS-EU/ITOperations/HUB-GSEU005-ITAZ@UAT
+            - template: ../template/template.yml
+            - checkout: git:///some repo
             - script: |
-                cd $(Build.SourcesDirectory)/UAT_Infra/Hub/Management/AzurePolicies
-                terragrunt init --upgrade 
-                terragrunt apply -auto-approve
+                cd $(Build.SourcesDirectory)/Infra
+                terraform init --upgrade 
+                terraform apply -auto-approve
             - task: DeleteFiles@1
               inputs:
                 SourceFolder: true
